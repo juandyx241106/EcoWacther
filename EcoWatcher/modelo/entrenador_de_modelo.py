@@ -24,7 +24,7 @@ def cargar_datos(path):
         "cobertura_arbolado_pct_norm",
         "pm25_norm",
         "pm10_norm",
-        "residuos_no_gestionados_kg_por_hab_dia_norm",
+        "residuos_no_gestionados_norm",
         "porcentaje_reciclaje_norm",
         "porcentaje_transporte_limpio_norm"
     ]

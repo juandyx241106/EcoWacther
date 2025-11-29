@@ -14,7 +14,7 @@ NUMERIC_COLUMNS = [
     "cobertura_arbolado_pct",
     "pm25",
     "pm10",
-    "residuos_no_gestionados_kg_por_hab_dia",
+    "residuos_no_gestionados",
     "porcentaje_reciclaje",
     "porcentaje_transporte_limpio",
 ]
@@ -25,7 +25,7 @@ ECO_WEIGHTS = {
     "cobertura_arbolado_pct": 0.15,
     "pm25": 0.22,
     "pm10": 0.08,
-    "residuos_no_gestionados_kg_por_hab_dia": 0.12,
+    "residuos_no_gestionados": 0.12,
     "porcentaje_reciclaje": 0.12,
     "porcentaje_transporte_limpio": 0.13,
 }
@@ -97,7 +97,7 @@ def compute_ecoscore_0_500(df, weights):
         if norm_col not in df.columns:
             raise KeyError(f"Falta {norm_col}")
         # invertir para "más es peor"
-        if feature in ["pm25", "pm10", "residuos_no_gestionados_kg_por_hab_dia"]:
+        if feature in ["pm25", "pm10", "residuos_no_gestionados"]:
             contrib = (1 - df[norm_col]) * w
         else:
             contrib = df[norm_col] * w
