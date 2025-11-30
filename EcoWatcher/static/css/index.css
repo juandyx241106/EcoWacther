@@ -1,0 +1,219 @@
+body {
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  background: #eef2f3;
+  margin: 0;
+  padding: 40px;
+}
+
+h1 {
+  margin-bottom: 20px;
+}
+
+.container {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+/* Form */
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 55%;
+}
+
+.card h2 {
+  margin-top: 0;
+}
+
+label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #bbb;
+  margin-bottom: 15px;
+  font-size: 15px;
+}
+
+button {
+  padding: 10px 18px;
+  background: #1e88e5;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+button:hover {
+  background: #1565c0;
+}
+
+.dashboard-btn {
+  display: inline-block;
+  margin-bottom: 20px;
+  padding: 10px 15px;
+  background: #43a047;
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 8px;
+}
+
+/* Panel lateral */
+.side-panel {
+  width: 35%;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 30px;
+}
+
+.recomendacion {
+  background: #f7f7f7;
+  padding: 12px;
+  border-left: 5px solid #1e88e5;
+  margin-bottom: 12px;
+  border-radius: 6px;
+}
+
+.critico {
+  border-left-color: #e53935;
+}
+
+.moderado {
+  border-left-color: #fb8c00;
+}
+
+.bueno {
+  border-left-color: #43a047;
+}
+
+.excelente {
+  border-left-color: #1e88e5;
+}
+
+/* Estado del EcoScore (badges usados en dashboard) */
+.eco-state {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 5px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  display: inline-block;
+  color: white;
+}
+
+.eco-state.critical {
+  background: #e53935;
+}
+
+.eco-state.moderate {
+  background: #fb8c00;
+}
+
+.eco-state.good {
+  background: #43a047;
+}
+
+.eco-state.excellent {
+  background: #1e88e5;
+}
+
+/* Reset básico para modal */
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Contenedor del modal */
+#modal-tabla {
+  border: none;
+  border-radius: 15px;
+  padding: 25px;
+  max-width: 450px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Contenido interno */
+.dialog-inner h2 {
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+/* Tabla */
+#modal-tabla table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+#modal-tabla th,
+#modal-tabla td {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+#modal-tabla th {
+  background-color: #f0f0f0;
+  font-weight: 600;
+}
+
+#modal-tabla td .table-label {
+  padding: 5px 12px;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 500;
+  display: inline-block;
+}
+
+/* Colores de categorías */
+.table-label.critico {
+  background-color: #e74c3c;
+}
+
+.table-label.moderado {
+  background-color: #f39c12;
+}
+
+.table-label.bueno {
+  background-color: #27ae60;
+}
+
+.table-label.excelente {
+  background-color: #2ecc71;
+}
+
+/* Botón cerrar */
+#cerrar-tabla,
+#btn-tabla {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  background-color: #3498db;
+  color: #fff;
+  transition: background-color 0.3s ease;
+}
+
+#cerrar-tabla:hover,
+#btn-tabla:hover {
+  background-color: #2980b9;
+}

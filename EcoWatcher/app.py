@@ -18,18 +18,18 @@ PARAMS_PATH = BASE_DIR / "preprocesamiento_datos" / "parametros_normalizados.jso
 # ===== INICIALIZAR APP Y CARGAR RECURSOS =====
 app = Flask(__name__)
 
-# cargar modelo
+# ===== CARGAR MODELO =====
 if not MODEL_PATH.exists():
     raise FileNotFoundError(f"Modelo no encontrado en: {MODEL_PATH}")
 model = load(MODEL_PATH)
 
-# cargar parámetros de normalización
+# ===== CARGAR PARÁMETROS DE NORMALIZACIÓN =====
 if not PARAMS_PATH.exists():
     raise FileNotFoundError(f"Parámetros no encontrados en: {PARAMS_PATH}")
 with open(PARAMS_PATH, "r") as f:
     norm_params = json.load(f)
 
-# columnas/orden que el modelo espera (debe coincidir con el entrenamiento)
+# ===== COLUMNAS/ORDEN QUE EL MODELO ESPERA =====
 FEATURE_ORDER = [
     "ha_verdes_km2",
     "cobertura_arbolado_pct",
