@@ -4,7 +4,7 @@ import os
 import json
 
 # ===== RUTAS =====
-INPUT_PATH = "EcoWatcher/data/bogota_sin_procesar.csv"
+INPUT_PATH = "EcoWatcher/data/dataset_mejorado.csv"
 OUTPUT_PATH = "EcoWatcher/data/bogota_procesado.csv"
 PARAMS_PATH = "EcoWatcher/preprocesamiento_datos/parametros_normalizados.json"
 

@@ -1,4 +1,3 @@
-# app.py
 import os
 import json
 from pathlib import Path
@@ -8,12 +7,11 @@ from flask import Flask, render_template, request, redirect, url_for
 import numpy as np
 from joblib import load
 import pandas as pd
+from sensor.simulador import iniciar_simulador_sensores
 
-# ===========================
-# Rutas (relativas al proyecto)
-# ===========================
+
+# ===== RUTAS DE RECURSOS =====
 BASE_DIR = Path(__file__).resolve().parent
-
 MODEL_PATH = BASE_DIR / "modelo" / "modelo_entrenado.pkl"
 PARAMS_PATH = BASE_DIR / "preprocesamiento_datos" / "parametros_normalizados.json"
 
@@ -42,13 +40,6 @@ FEATURE_ORDER = [
     "porcentaje_transporte_limpio",
 ]
 
-# indicador de variables "más es peor" (invertir)
-# El modelo fue entrenado con las columnas normalizadas tal cual (p.ej. pm25_norm)
-# y no con su inverso. Por tanto no invertimos las características antes de
-# pasar al modelo — la inversión se aplicó en el cálculo del ecoscore durante
-# el preprocesamiento para aportar la contribución correcta al score final.
-INVERT_FEATURES = set()
-
 
 # ===== FUNCIONES DE NORMALIZACIÓN =====
 def apply_minmax(value, vmin, vmax):
@@ -57,76 +48,175 @@ def apply_minmax(value, vmin, vmax):
     return float((value - vmin) / (vmax - vmin))
 
 
-def apply_percentile(value, p_low, p_high):
-    if p_low is None or p_high is None or p_high == p_low:
-        return 0.5
-    x = float(value)
-    if x <= p_low:
-        return 0.0
-    if x >= p_high:
-        return 1.0
-    return (x - p_low) / (p_high - p_low)
-
-
 def normalize_feature(name, raw_value):
-    """
-    Normaliza un valor usando norm_params y el método guardado.
-    Devuelve valor normalizado en 0..1
-    """
     method = norm_params.get("method", "minmax")
     colparams = norm_params.get("columns", {}).get(name, {})
-    # Si el usuario envía string permitido (vacío), convertir a float por seguridad
     x = float(raw_value)
+
     if method == "minmax":
-        vmin = colparams.get("vmin", None)
-        vmax = colparams.get("vmax", None)
-        return apply_minmax(x, vmin, vmax)
+        return apply_minmax(x, colparams.get("vmin"), colparams.get("vmax"))
+
+    return 0.5  # fallback seguro
+
+
+# ===== FUNCIONES DE RECOMENDACIONES =====
+def generar_recomendaciones(inputs, score):
+    recomendaciones = []
+
+    # ===== CATEGORÍA GENERAL =====
+    if score < 200:
+        recomendaciones.append(
+            {
+                "texto": "El ecosistema está en estado CRÍTICO. Se requiere intervención urgente.",
+                "clase": "critico",
+            }
+        )
+    elif score < 350:
+        recomendaciones.append(
+            {
+                "texto": "Estado MODERADO: hay problemas, pero pueden mejorarse con acciones continuas.",
+                "clase": "moderado",
+            }
+        )
+    elif score < 450:
+        recomendaciones.append(
+            {
+                "texto": "Estado BUENO: sigue fortaleciendo los aspectos ambientales.",
+                "clase": "bueno",
+            }
+        )
     else:
-        p_low = colparams.get("p_low", None)
-        p_high = colparams.get("p_high", None)
-        return apply_percentile(x, p_low, p_high)
+        recomendaciones.append(
+            {
+                "texto": "¡Excelente estado ambiental! Mantén las prácticas actuales.",
+                "clase": "excelente",
+            }
+        )
+
+    # ===== VARIABLES INDIVIDUALES =====
+    if inputs["ha_verdes_km2"] < 5:
+        recomendaciones.append(
+            {
+                "texto": "Muy pocas hectáreas verdes. Se recomienda ampliar zonas verdes.",
+                "clase": "critico",
+            }
+        )
+    elif inputs["ha_verdes_km2"] < 10:
+        recomendaciones.append(
+            {
+                "texto": "Las zonas verdes son bajas. Plantar árboles ayudaría.",
+                "clase": "moderado",
+            }
+        )
+
+    if inputs["cobertura_arbolado_pct"] < 10:
+        recomendaciones.append(
+            {
+                "texto": "Cobertura arbórea muy baja. Urgente reforestación.",
+                "clase": "critico",
+            }
+        )
+    elif inputs["cobertura_arbolado_pct"] < 20:
+        recomendaciones.append(
+            {
+                "texto": "Aumentar árboles mejoraría la calidad ambiental.",
+                "clase": "moderado",
+            }
+        )
+
+    if inputs["pm25"] > 40:
+        recomendaciones.append(
+            {
+                "texto": "PM2.5 extremadamente alto. Revisar fuentes de contaminación.",
+                "clase": "critico",
+            }
+        )
+    elif inputs["pm25"] > 25:
+        recomendaciones.append(
+            {"texto": "PM2.5 elevado. Reducir emisiones ayudaría.", "clase": "moderado"}
+        )
+
+    if inputs["pm10"] > 60:
+        recomendaciones.append(
+            {
+                "texto": "PM10 elevado. Revisar fuentes de partículas.",
+                "clase": "moderado",
+            }
+        )
+
+    if inputs["residuos_no_gestionados"] > 0.7:
+        recomendaciones.append(
+            {
+                "texto": "Muchos residuos sin gestionar. Mejorar manejo de basuras.",
+                "clase": "critico",
+            }
+        )
+    elif inputs["residuos_no_gestionados"] > 0.3:
+        recomendaciones.append(
+            {"texto": "Manejo de residuos mejorable.", "clase": "moderado"}
+        )
+
+    if inputs["porcentaje_reciclaje"] < 10:
+        recomendaciones.append(
+            {
+                "texto": "Reciclaje muy bajo. Incrementarlo ayudaría mucho.",
+                "clase": "critico",
+            }
+        )
+    elif inputs["porcentaje_reciclaje"] < 25:
+        recomendaciones.append(
+            {"texto": "Se puede mejorar el reciclaje.", "clase": "moderado"}
+        )
+
+    if inputs["porcentaje_transporte_limpio"] < 10:
+        recomendaciones.append(
+            {
+                "texto": "Muy poco transporte limpio. Fomentar medios sostenibles.",
+                "clase": "critico",
+            }
+        )
+    elif inputs["porcentaje_transporte_limpio"] < 25:
+        recomendaciones.append(
+            {
+                "texto": "Incrementar transporte limpio sería beneficioso.",
+                "clase": "moderado",
+            }
+        )
+
+    return recomendaciones
 
 
-# ===== RUTA WEB ======
+# ===== RUTAS WEB =====
+
+
 @app.route("/", methods=["GET"])
 def index():
-    # mostrar formulario (vacío)
     return render_template("index.html")
 
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    # leer inputs desde el form
     inputs = {}
+
+    # ===== LEER DATOS DEL FORM =====
     for feat in FEATURE_ORDER:
-        # el nombre del input en el formulario debe coincidir con feat
         raw = request.form.get(feat)
-        if raw is None or raw.strip() == "":
-            # puedes cambiar comportamiento: ahora devolvemos error simple
+        if not raw:
             return render_template("index.html", error=f"Falta valor para {feat}")
         try:
             inputs[feat] = float(raw)
-        except ValueError:
-            return render_template(
-                "index.html", error=f"Valor inválido para {feat}: {raw}"
-            )
+        except:
+            return render_template("index.html", error=f"Valor inválido para {feat}")
 
-    # normalizar en el mismo orden que el modelo espera
-    x_norm = []
-    for feat in FEATURE_ORDER:
-        norm_val = normalize_feature(feat, inputs[feat])
-        # Nota: no invertir aquí — el modelo fue entrenado con los valores
-        # normalizados tal cual (v. preprocesador). Mantener consistencia.
-        x_norm.append(norm_val)
-        print(f"{feat} → normalizado = {norm_val}")
+    # ===== NORMALIZAR =====
+    x_norm = [normalize_feature(f, inputs[f]) for f in FEATURE_ORDER]
+    X = np.array([x_norm])
 
-    X = np.array([x_norm])  # forma (1, n_features)
-
-    # predecir con el modelo entrenado
-    pred = model.predict(X)[0]  # ecoscore 0-500
+    # ===== PREDECIR =====
+    pred = model.predict(X)[0]
     pred_rounded = round(float(pred), 3)
 
-    # categoría simple (mismos umbrales que en preprocesador)
+    # ===== CATEGORÍA =====
     if pred_rounded >= 450:
         cat = "Excelente"
     elif pred_rounded >= 350:
@@ -136,30 +226,71 @@ def predict():
     else:
         cat = "Crítico"
 
+    # ===== GENERAR RECOMENDACIONES =====
+    recomendaciones = generar_recomendaciones(inputs, pred_rounded)
+
     # ===== GUARDAR EN BD =====
     db = SessionLocal()
-    try:
-        registro = Prediccion(
-            ha_verdes_km2=inputs["ha_verdes_km2"],
-            cobertura_arbolado_pct=inputs["cobertura_arbolado_pct"],
-            pm25=inputs["pm25"],
-            pm10=inputs["pm10"],
-            residuos_no_gestionados=inputs["residuos_no_gestionados"],
-            porcentaje_reciclaje=inputs["porcentaje_reciclaje"],
-            porcentaje_transporte_limpio=inputs["porcentaje_transporte_limpio"],
-            ecoscore=pred_rounded,
-        )
-        db.add(registro)
-        db.commit()
-    finally:
-        db.close()
+    registro = Prediccion(**inputs, ecoscore=pred_rounded)
+    db.add(registro)
+    db.commit()
+    db.close()
 
+    # ===== RENDER =====
     return render_template(
-        "index.html", prediction=pred_rounded, category=cat, inputs=inputs
+        "index.html",
+        prediction=pred_rounded,
+        category=cat,
+        inputs=inputs,
+        recomendaciones=recomendaciones,
     )
+
+
+# ===== API PARA EL DASHBOARD =====
+
+
+@app.route("/api/historico")
+def api_historico():
+    limit = int(request.args.get("limit", 20))
+    db = SessionLocal()
+    rows = db.query(Prediccion).order_by(Prediccion.id.desc()).limit(limit).all()
+    db.close()
+
+    data = [
+        {
+            "id": r.id,
+            "ecoscore": r.ecoscore,
+            "timestamp": r.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        for r in rows
+    ]
+
+    return {"historico": data}
+
+
+@app.route("/api/ultimo")
+def api_ultimo():
+    db = SessionLocal()
+    row = db.query(Prediccion).order_by(Prediccion.id.desc()).first()
+    db.close()
+
+    if not row:
+        return {"status": "sin_datos"}
+
+    return {
+        "id": row.id,
+        "ecoscore": row.ecoscore,
+        "timestamp": row.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+    }
+
+
+@app.route("/dashboard")
+def dashboard():
+    return render_template("dashboard.html")
 
 
 # ===== MAIN =====
 if __name__ == "__main__":
-    init_db()  # crea tablas si no existen
+    init_db()
+    iniciar_simulador_sensores()
     app.run(debug=True)

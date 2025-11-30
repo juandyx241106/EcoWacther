@@ -12,6 +12,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_PATH = os.path.join(BASE_DIR, "data", "bogota_procesado.csv")
 MODEL_PATH = os.path.join(BASE_DIR, "modelo", "modelo_entrenado.pkl")
 
+
 # ===== CARGA DE DATOS =====
 def cargar_datos(path):
     if not os.path.exists(path):
@@ -26,7 +27,7 @@ def cargar_datos(path):
         "pm10_norm",
         "residuos_no_gestionados_norm",
         "porcentaje_reciclaje_norm",
-        "porcentaje_transporte_limpio_norm"
+        "porcentaje_transporte_limpio_norm",
     ]
 
     columna_objetivo = "ecoscore_0_500"
@@ -36,6 +37,7 @@ def cargar_datos(path):
 
     return X, y, columnas_entrada
 
+
 # ===== ENTRENAMIENTO =====
 def entrenar_modelo(X, y):
     # Dividir datos
@@ -44,10 +46,7 @@ def entrenar_modelo(X, y):
     )
 
     # Crear modelo
-    modelo = RandomForestRegressor(
-        n_estimators=300,
-        random_state=42
-    )
+    modelo = RandomForestRegressor(n_estimators=300, random_state=42)
 
     print("Entrenando modelo...")
     modelo.fit(X_train, Y_train)
@@ -65,11 +64,13 @@ def entrenar_modelo(X, y):
 
     return modelo
 
+
 # ===== GUARDAR MODELO =====
 def guardar_modelo(modelo, path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     dump(modelo, path)
     print(f"\nModelo guardado en: {path}")
+
 
 # ===== MAIN =====
 if __name__ == "__main__":

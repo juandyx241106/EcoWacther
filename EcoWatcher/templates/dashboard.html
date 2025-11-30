@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>EcoSense - Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background: #eef2f3;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .eco-score {
+            font-size: 34px;
+            font-weight: bold;
+            margin: 0;
+            color: #2d3748;
+        }
+
+        .eco-state {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 5px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: inline-block;
+            color: white;
+        }
+
+        .critical {
+            background: #e53935;
+        }
+
+        .moderate {
+            background: #fb8c00;
+        }
+
+        .good {
+            background: #43a047;
+        }
+
+        .excellent {
+            background: #1e88e5;
+        }
+
+        canvas {
+            margin-top: 20px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <audio id="alerta-sound">
+        <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+    </audio>
+
+    <div class="card" id="card-principal">
+        <h2>Último EcoScore</h2>
+        <a href="/" style="
+        display:inline-block;
+        margin-bottom:15px;
+        padding:10px 15px;
+        background:#1e88e5;
+        color:white;
+        font-weight:bold;
+        text-decoration:none;
+        border-radius:8px;
+    ">Volver al formulario</a>
+
+        <p id="ultimo" class="eco-score">Cargando...</p>
+        <span id="estado" class="eco-state">---</span>
+        <p id="tendencia"></p>
+        <div id="alerta">Estado CRÍTICO: El ecosistema está en mala condición.</div>
+    </div>
+
+    <div class="card">
+        <h2>Tendencia del EcoScore (últimos 30 registros)</h2>
+        <canvas id="grafico"></canvas>
+    </div>
+
+    <script>
+        let graficoGlobal = null;
+
+        // ===== CALCULAR TENDENCIA =====
+        async function calcularTendencia(scoreActual) {
+            const res = await fetch("/api/historico?limit=2");
+            const data = await res.json();
+
+            const valores = data.historico.reverse();
+
+            if (valores.length < 2) {
+                return { texto: "→ Estable", color: "#555" };
+            }
+
+            const anterior = valores[valores.length - 2].ecoscore;
+            const diferencia = scoreActual - anterior;
+
+            if (diferencia > 5) {
+                return { texto: "↗ Mejora", color: "#2e7d32" };
+            }
+            if (diferencia < -5) {
+                return { texto: "↘ Empeora", color: "#c62828" };
+            }
+            return { texto: "→ Estable", color: "#555" };
+        }
+
+        // ===== ÚLTIMO ECOSCORE =====
+        async function cargarUltimo() {
+            const res = await fetch("/api/ultimo");
+            const data = await res.json();
+
+            if (data.status === "sin_datos") {
+                document.getElementById("ultimo").innerText = "No hay datos aún";
+                return;
+            }
+
+            const score = data.ecoscore;
+            document.getElementById("ultimo").innerText =
+                `${score.toFixed(2)} (${data.timestamp})`;
+
+            // Clasificación
+            let estado = "";
+            let clase = "";
+
+            if (score < 200) {
+                estado = "Crítico";
+                clase = "critical";
+            } else if (score < 350) {
+                estado = "Moderado";
+                clase = "moderate";
+            } else if (score < 450) {
+                estado = "Bueno";
+                clase = "good";
+            } else {
+                estado = "Excelente";
+                clase = "excellent";
+            }
+
+            const estadoElem = document.getElementById("estado");
+            estadoElem.innerText = estado;
+            estadoElem.className = "eco-state " + clase;
+
+            // Tendencia
+            const tendenciaElem = document.getElementById("tendencia");
+
+            const tendencia = await calcularTendencia(score);
+            tendenciaElem.innerText = tendencia.texto;
+            tendenciaElem.style.color = tendencia.color;
+
+            // Alerta
+            const alerta = document.getElementById("alerta");
+            const card = document.getElementById("card-principal");
+            const sonido = document.getElementById("alerta-sound");
+
+            sonido.currentTime = 0;
+            sonido.play();
+
+            if (score < 200) {
+                alerta.style.display = "block";
+                card.style.border = "3px solid #e53935";
+            } else {
+                alerta.style.display = "none";
+                card.style.border = "none";
+            }
+        }
+
+        // ===== HISTORIAL =====
+        async function cargarHistorial() {
+            const res = await fetch("/api/historico?limit=30");
+            const data = await res.json();
+            return data.historico.reverse();
+        }
+
+        // ===== GRAFICO =====
+        async function dibujarGrafico() {
+            const historial = await cargarHistorial();
+
+            const labels = historial.map(x => x.timestamp);
+            const valores = historial.map(x => Number(x.ecoscore));
+
+            const ctx = document.getElementById("grafico").getContext("2d");
+
+            if (graficoGlobal !== null) graficoGlobal.destroy();
+
+            graficoGlobal = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "EcoScore",
+                        data: valores,
+                        borderWidth: 3,
+                        tension: 0.3,
+                        borderColor: "#666666",
+                        pointBackgroundColor: "#444444",
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    animation: false,
+                    scales: {
+                        y: { beginAtZero: true, max: 500 }
+                    }
+                }
+            });
+        }
+
+        // ===== AUTO-REFRESCO =====
+        setInterval(() => {
+            cargarUltimo();
+            dibujarGrafico();
+        }, 60000);
+
+        cargarUltimo();
+        dibujarGrafico();
+    </script>
+
+</body>
+
+</html>

@@ -23,4 +23,5 @@ def init_db():
     Crear las tablas si no existen.
     """
     from . import modelodb  # importar modelos para que SQLAlchemy los registre
+
     Base.metadata.create_all(bind=engine)

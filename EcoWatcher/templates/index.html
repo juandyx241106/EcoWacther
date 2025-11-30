@@ -1,33 +1,181 @@
 <!doctype html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <title>EcoSense - Predict</title>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: #eef2f3;
+      margin: 0;
+      padding: 40px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .container {
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+    }
+
+    /* Form */
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 55%;
+    }
+
+    .card h2 {
+      margin-top: 0;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #bbb;
+      margin-bottom: 15px;
+      font-size: 15px;
+    }
+
+    button {
+      padding: 10px 18px;
+      background: #1e88e5;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #1565c0;
+    }
+
+    .dashboard-btn {
+      display: inline-block;
+      margin-bottom: 20px;
+      padding: 10px 15px;
+      background: #43a047;
+      color: white;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 8px;
+    }
+
+    /* Panel lateral */
+    .side-panel {
+      width: 35%;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 30px;
+    }
+
+    .recomendacion {
+      background: #f7f7f7;
+      padding: 12px;
+      border-left: 5px solid #1e88e5;
+      margin-bottom: 12px;
+      border-radius: 6px;
+    }
+
+    .critico {
+      border-left-color: #e53935;
+    }
+
+    .moderado {
+      border-left-color: #fb8c00;
+    }
+
+    .bueno {
+      border-left-color: #43a047;
+    }
+
+    .excelente {
+      border-left-color: #1e88e5;
+    }
+  </style>
 </head>
+
 <body>
-  <h1>EcoSense — Predecir EcoScore (0–500)</h1>
 
-  {% if error %}
-    <div style="color: red;">{{ error }}</div>
-  {% endif %}
+  <a href="/dashboard" class="dashboard-btn">← Volver al Dashboard</a>
 
-  <form action="{{ url_for('predict') }}" method="post">
-    <label>ha_verdes_km2: <input name="ha_verdes_km2" step="0.01" required></label><br>
-    <label>cobertura_arbolado_pct: <input name="cobertura_arbolado_pct" step="0.01" required></label><br>
-    <label>pm25: <input name="pm25" step="0.01" required></label><br>
-    <label>pm10: <input name="pm10" step="0.01" required></label><br>
-    <label>residuos_no_gestionados: <input name="residuos_no_gestionados" step="0.001" required></label><br>
-    <label>porcentaje_reciclaje: <input name="porcentaje_reciclaje" step="0.01" required></label><br>
-    <label>porcentaje_transporte_limpio: <input name="porcentaje_transporte_limpio" step="0.01" required></label><br>
+  <h1>EcoSense — Predecir EcoScore</h1>
 
-    <button type="submit">Predecir EcoScore</button>
-  </form>
+  <div class="container">
 
-  {% if prediction is defined %}
-    <h2>EcoScore: {{ prediction }} / 500</h2>
-    <h3>Categoría: {{ category }}</h3>
-    <h4>Valores enviados:</h4>
-    <pre>{{ inputs }}</pre>
-  {% endif %}
+    <!-- FORMULARIO -->
+    <div class="card">
+      <h2>Ingresar datos ambientales</h2>
+
+      <form action="{{ url_for('predict') }}" method="post">
+
+        <label>Hectáreas verdes por km²</label>
+        <input name="ha_verdes_km2" step="0.01" required>
+
+        <label>% de cobertura arbórea</label>
+        <input name="cobertura_arbolado_pct" step="0.01" required>
+
+        <label>PM2.5</label>
+        <input name="pm25" step="0.01" required>
+
+        <label>PM10</label>
+        <input name="pm10" step="0.01" required>
+
+        <label>Residuos no gestionados</label>
+        <input name="residuos_no_gestionados" step="0.001" required>
+
+        <label>% de reciclaje</label>
+        <input name="porcentaje_reciclaje" step="0.01" required>
+
+        <label>% de transporte limpio</label>
+        <input name="porcentaje_transporte_limpio" step="0.01" required>
+
+        <button type="submit">Predecir EcoScore</button>
+      </form>
+
+      {% if prediction is defined %}
+      <h2>EcoScore: {{ prediction }} / 500</h2>
+      <h3>Categoría: {{ category }}</h3>
+      {% endif %}
+    </div>
+
+    <!-- PANEL DE RECOMENDACIONES -->
+    <div class="side-panel">
+      <h2>Recomendaciones</h2>
+
+      {% if recomendaciones %}
+      {% for r in recomendaciones %}
+      <div class="recomendacion {{ r.clase }}">
+        {{ r.texto }}
+      </div>
+      {% endfor %}
+      {% else %}
+      <p style="color:#666;">Aquí aparecerán recomendaciones cuando envíes el formulario.</p>
+      {% endif %}
+    </div>
+
+  </div>
+
 </body>
+
 </html>

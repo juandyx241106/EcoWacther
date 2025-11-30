@@ -2,32 +2,32 @@
   "method": "minmax",
   "columns": {
     "ha_verdes_km2": {
-      "vmin": 0.0077596438655946,
-      "vmax": 39.85009442153813
+      "vmin": 0.0077,
+      "vmax": 39.85
     },
     "cobertura_arbolado_pct": {
-      "vmin": 5.077105836604158,
-      "vmax": 49.96440804660416
+      "vmin": 5.07,
+      "vmax": 49.96
     },
     "pm25": {
-      "vmin": 5.049051731636992,
-      "vmax": 59.79435508185384
+      "vmin": 5.04,
+      "vmax": 59.79
     },
     "pm10": {
-      "vmin": 10.329445908003445,
-      "vmax": 99.96552293954072
+      "vmin": 10.32,
+      "vmax": 99.96
     },
     "residuos_no_gestionados": {
-      "vmin": 0.0050990193501761,
-      "vmax": 1.4978719547060493
+      "vmin": 0.000133182844881,
+      "vmax": 1.497
     },
     "porcentaje_reciclaje": {
-      "vmin": 0.2294526688129117,
-      "vmax": 59.90348414622256
+      "vmin": 0.22,
+      "vmax": 59.9
     },
     "porcentaje_transporte_limpio": {
-      "vmin": 0.0036528279870468,
-      "vmax": 79.94847703966977
+      "vmin": 0.0036,
+      "vmax": 79.94
     }
   }
 }
