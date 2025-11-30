@@ -2,7 +2,8 @@
 import os
 import json
 from pathlib import Path
-
+from database.db import SessionLocal, init_db
+from database.modelodb import Prediccion
 from flask import Flask, render_template, request, redirect, url_for
 import numpy as np
 from joblib import load
@@ -119,7 +120,6 @@ def predict():
         x_norm.append(norm_val)
         print(f"{feat} → normalizado = {norm_val}")
 
-
     X = np.array([x_norm])  # forma (1, n_features)
 
     # predecir con el modelo entrenado
@@ -136,6 +136,24 @@ def predict():
     else:
         cat = "Crítico"
 
+    # ===== GUARDAR EN BD =====
+    db = SessionLocal()
+    try:
+        registro = Prediccion(
+            ha_verdes_km2=inputs["ha_verdes_km2"],
+            cobertura_arbolado_pct=inputs["cobertura_arbolado_pct"],
+            pm25=inputs["pm25"],
+            pm10=inputs["pm10"],
+            residuos_no_gestionados=inputs["residuos_no_gestionados"],
+            porcentaje_reciclaje=inputs["porcentaje_reciclaje"],
+            porcentaje_transporte_limpio=inputs["porcentaje_transporte_limpio"],
+            ecoscore=pred_rounded,
+        )
+        db.add(registro)
+        db.commit()
+    finally:
+        db.close()
+
     return render_template(
         "index.html", prediction=pred_rounded, category=cat, inputs=inputs
     )
@@ -143,4 +161,5 @@ def predict():
 
 # ===== MAIN =====
 if __name__ == "__main__":
+    init_db()  # crea tablas si no existen
     app.run(debug=True)
