@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Cuenta</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/crear_cuenta.css') }}">
+    <script src="{{ url_for('static', filename='js/crear_cuenta.js') }}"></script>
+</head>
+<body>
+    <div class="formulario">
+        <h1>Crear Cuenta</h1>
+        <form method="post" id="form-registro">
+            <div class="campo">
+                <input type="text" name="usuario" required>
+                <label>Usuario</label>
+            </div>
+            <div class="campo">
+                <input type="email" name="email" required>
+                <label>Correo Electrónico</label>
+            </div>
+            <div class="campo">
+                <input type="password" id="contraseña" name="contraseña" required>
+                <label>Contraseña</label>
+            </div>
+            <div class="campo">
+                <input type="password" id="confirmar_contraseña" name="contraseña_confirm" required>
+                <label>Confirmar Contraseña</label>
+            </div>
+
+            <p id="error-password" style="color:red; display:none; font-size:14px;">
+                Las contraseñas no coinciden.
+            </p>
+            <div class="campo">
+                <select name="localidad" required>
+                    <option value="" disabled selected>Selecciona tu localidad</option>
+                    <option value="usaquen">Usaquén</option>
+                    <option value="chapinero">Chapinero</option>
+                    <option value="santa_fe">Santa Fe</option>
+                    <option value="san_cristobal">San Cristóbal</option>
+                    <option value="usme">Usme</option>
+                    <option value="tunjuelito">Tunjuelito</option>
+                    <option value="bosa">Bosa</option>
+                    <option value="kenedy">Kennedy</option>
+                    <option value="fontibon">Fontibón</option>
+                    <option value="engativa">Engativá</option>
+                    <option value="suba">Suba</option>
+                    <option value="barrios_unidos">Barrios Unidos</option>
+                    <option value="teusaquillo">Teusaquillo</option>
+                    <option value="los_martires">Los Mártires</option>
+                    <option value="antonio_nariño">Antonio Nariño</option>
+                    <option value="puente_aranda">Puente Aranda</option>
+                    <option value="candelaria">Candelaria</option>
+                    <option value="rafael_uribe_uribe">Rafael Uribe Uribe</option>
+                    <option value="ciudad_bolivar">Ciudad Bolívar</option>
+                    <option value="sumapaz">Sumapaz</option>
+                </select>
+                <label>Localidad</label>
+            </div>
+
+            <input type="submit" value="Registrar">
+
+            <div class="iniciar-sesion">¿Ya tienes una cuenta? <a href="/login">Inicia Sesión</a></div>
+        </form>
+    </div>
