@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resetear Contraseña</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/formularios.css') }}">
+</head>
+<body>
+    <div class="formulario">
+        <h1>Resetear Contraseña</h1>
+        
+        <form method="post" action="{{ url_for('auth.reset_contraseña') }}">
+            <p>Hemos enviado un código de 6 dígitos a:<br><strong>{{ email }}</strong></p>
+            
+            {% if error %}
+                <div class="error-message">{{ error }}</div>
+            {% endif %}
+            
+            <div class="campo">
+                <input type="text" name="codigo" maxlength="6" placeholder="000000" required>
+                <label>Código de Verificación</label>
+            </div>
+            
+            <div class="campo">
+                <input type="password" id="nueva_contraseña" name="nueva_contraseña" required>
+                <label>Nueva Contraseña</label>
+            </div>
+            
+            <div class="campo">
+                <input type="password" id="confirmar_contraseña" name="confirmar_contraseña" required>
+                <label>Confirmar Contraseña</label>
+            </div>
+            
+            <p id="error-password">
+                Las contraseñas no coinciden.
+            </p>
+
+            <input type="submit" value="Resetear Contraseña">
+
+            <div class="registrarse">
+                <a href="{{ url_for('auth.login') }}">Volver al login</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const newPass = document.getElementById('nueva_contraseña');
+            const confirmPass = document.getElementById('confirmar_contraseña');
+            const errorMsg = document.getElementById('error-password');
+            
+            form.addEventListener('submit', function(e) {
+                if (newPass.value !== confirmPass.value) {
+                    e.preventDefault();
+                    errorMsg.style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

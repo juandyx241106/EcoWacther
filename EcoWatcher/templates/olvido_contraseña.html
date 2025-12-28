@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/formularios.css') }}">
+</head>
+<body>
+    <div class="formulario">
+        <h1>Recuperar Contraseña</h1>
+        
+        {% if error %}
+            <div class="error-message">{{ error }}</div>
+        {% endif %}
+        
+        {% if success %}
+            <div class="success-message">{{ success }}</div>
+        {% endif %}
+        
+        <form method="post" action="{{ url_for('auth.olvido_contraseña') }}">
+            <p>Ingresa tu email y recibirás un código para resetear tu contraseña.</p>
+            
+            <div class="campo">
+                <input type="email" name="email" required>
+                <label>Correo Electrónico</label>
+            </div>
+
+            <input type="submit" value="Enviar Código">
+
+            <div class="registrarse">
+                <a href="{{ url_for('auth.login') }}">Volver al login</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

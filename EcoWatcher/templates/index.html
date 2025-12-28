@@ -8,8 +8,11 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
 </head>
 <body>
+  <div class="header-controls">
+    <a href="{{ url_for('predicciones.dashboard') }}" class="dashboard-btn">← Volver al Dashboard</a>
+    <a href="{{ url_for('auth.logout') }}" class="logout-btn">Cerrar Sesión</a>
+  </div>
 
-  <a href="{{ url_for('predicciones.dashboard') }}" class="dashboard-btn">← Volver al Dashboard</a>
 <button id="btn-tabla" aria-label="Mostrar tabla de rangos">Mostrar Rangos EcoScore</button>
 
 <dialog id="modal-tabla" aria-labelledby="tabla-title">

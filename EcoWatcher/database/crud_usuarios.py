@@ -55,6 +55,99 @@ def crear_usuario(nombre: str, email: str, contraseña: str, db: Session = None)
             db.close()
 
 
+def generar_codigo_reset_contraseña(email: str, db: Session = None):
+    """
+    Generar código de reset de contraseña para usuario confirmado.
+    
+    Args:
+        email: Email del usuario
+        db: Sesión de la base de datos (opcional)
+    
+    Returns:
+        Código de 6 dígitos o None
+    """
+    if db is None:
+        db = SessionLocal()
+        close_session = True
+    else:
+        close_session = False
+    
+    try:
+        usuario = db.query(Usuarios).filter(Usuarios.email == email).first()
+        
+        if not usuario or not usuario.email_confirmado:
+            return None
+        
+        # Generar código aleatorio de 6 dígitos
+        codigo = ''.join(random.choices(string.digits, k=6))
+        
+        # Guardar código con expiración de 15 minutos
+        usuario.codigo_confirmacion = codigo
+        usuario.fecha_expiracion_codigo = datetime.utcnow() + timedelta(minutes=15)
+        db.commit()
+        db.refresh(usuario)
+        
+        return codigo
+    
+    except Exception as e:
+        db.rollback()
+        print(f"Error al generar código de reset: {e}")
+        return None
+    
+    finally:
+        if close_session:
+            db.close()
+
+
+def verificar_codigo_reset_contraseña(email: str, codigo: str, nueva_contraseña: str, db: Session = None):
+    """
+    Verificar código de reset y actualizar contraseña.
+    
+    Args:
+        email: Email del usuario
+        codigo: Código de 6 dígitos
+        nueva_contraseña: Nueva contraseña en texto plano
+        db: Sesión de la base de datos (opcional)
+    
+    Returns:
+        Usuario actualizado o None
+    """
+    if db is None:
+        db = SessionLocal()
+        close_session = True
+    else:
+        close_session = False
+    
+    try:
+        usuario = db.query(Usuarios).filter(Usuarios.email == email).first()
+        
+        if not usuario:
+            return None
+        
+        # Verificar código y expiración
+        if (usuario.codigo_confirmacion == codigo and
+            usuario.fecha_expiracion_codigo and
+            datetime.utcnow() < usuario.fecha_expiracion_codigo):
+            
+            # Actualizar contraseña
+            usuario.contraseña_hash = generate_password_hash(nueva_contraseña)
+            usuario.codigo_confirmacion = None
+            usuario.fecha_expiracion_codigo = None
+            db.commit()
+            db.refresh(usuario)
+            return usuario
+        
+        return None
+    
+    except Exception as e:
+        db.rollback()
+        print(f"Error al resetear contraseña: {e}")
+        return None
+    
+    finally:
+        if close_session:
+            db.close()
+
 def obtener_usuario_por_email(email: str, db: Session = None):
     """
     Obtener un usuario por email.
