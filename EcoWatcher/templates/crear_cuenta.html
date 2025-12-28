@@ -11,10 +11,13 @@
 <body>
     <div class="formulario">
         <h1>Crear Cuenta</h1>
-        <form method="post" id="form-registro">
+        {% if error %}
+            <div class="error-message">{{ error }}</div>
+        {% endif %}
+        <form method="post" id="form-registro" action="{{ url_for('auth.crear_cuenta') }}">
             <div class="campo">
-                <input type="text" name="usuario" required>
-                <label>Usuario</label>
+                <input type="text" name="nombre" required>
+                <label>Nombre</label>
             </div>
             <div class="campo">
                 <input type="email" name="email" required>
@@ -61,6 +64,6 @@
 
             <input type="submit" value="Registrar">
 
-            <div class="iniciar-sesion">¿Ya tienes una cuenta? <a href="/login">Inicia Sesión</a></div>
+            <div class="iniciar-sesion">¿Ya tienes una cuenta? <a href="{{ url_for('auth.login') }}">Inicia Sesión</a></div>
         </form>
     </div>

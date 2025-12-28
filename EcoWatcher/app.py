@@ -2,6 +2,10 @@ import os
 from pathlib import Path
 from flask import Flask
 from joblib import load
+from dotenv import load_dotenv
+
+# ===== CARGAR VARIABLES DE ENTORNO =====
+load_dotenv()
 
 # ===== IMPORTAR CONFIGURACIÓN =====
 from config import BASE_DIR, MODEL_PATH, SECRET_KEY, DEBUG
